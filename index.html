@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Himawan Battle Batu Gunting Kertas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f3f3;
+            margin: 0;
+        }
+        .game-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 400px;
+        }
+        h1 {
+            color: #333;
+        }
+        .status {
+            margin: 20px 0;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .health {
+            margin-top: 10px;
+        }
+
+        /* Animasi untuk damage */
+        .damage-animation {
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+            animation: damage-animation 1s ease-in-out;
+            position: absolute;
+        }
+
+        @keyframes damage-animation {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        .character-container {
+            position: relative;
+            text-align: center;
+        }
+
+        /* Karakter pemain */
+        .pemain {
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+            left: 20%;
+        }
+
+        /* Karakter musuh */
+        .musuh {
+            width: 80px;
+            height: 80px;
+            background-color: #FF5722;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+            right: 20%;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Hi.io Battle Batu Gunting Kertas</h1>
+        <p>Pilih salah satu: Batu, Gunting, atau Kertas. Jika kamu menang, giliran menyerang akan diberikan!</p>
+
+        <div class="status">
+            <div class="health">
+                <span>Pemain HP: <span id="pemain-hp">100</span></span><br>
+                <span>Musuh HP: <span id="musuh-hp">100</span></span>
+            </div>
+        </div>
+
+        <!-- Pilihan batu, gunting, kertas -->
+        <div>
+            <button class="btn" id="batu-btn">Batu</button>
+            <button class="btn" id="gunting-btn">Gunting</button>
+            <button class="btn" id="kertas-btn">Kertas</button>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <!-- Karakter pemain dan musuh -->
+        <div class="character-container">
+            <div class="pemain" id="pemain"></div>
+            <div class="musuh" id="musuh"></div>
+        </div>
+
+        <!-- Restart button -->
+        <button class="btn" id="restart-btn" style="display: none;">Main Lagi</button>
+    </div>
+
+    <script>
+        // Initial values
+        let pemainHp = 100;
+        let musuhHp = 100;
+
+        // Elements
+        const resultElement = document.getElementById("result");
+        const pemainHpElement = document.getElementById("pemain-hp");
+        const musuhHpElement = document.getElementById("musuh-hp");
+        const batuButton = document.getElementById("batu-btn");
+        const guntingButton = document.getElementById("gunting-btn");
+        const kertasButton = document.getElementById("kertas-btn");
+        const pemainElement = document.getElementById("pemain");
+        const musuhElement = document.getElementById("musuh");
+        const restartButton = document.getElementById("restart-btn");
+
+        // Function to generate random choice for NPC (Musuh)
+        function getRandomChoice() {
+            const choices = ["batu", "gunting", "kertas"];
+            return choices[Math.floor(Math.random() * 3)];
+        }
+
+        // Function to handle damage animation
+        function showDamage(target, damageAmount) {
+            const damageElement = document.createElement("div");
+            damageElement.innerText = `-${damageAmount}`;
+            damageElement.classList.add("damage-animation");
+            target.appendChild(damageElement);
+            setTimeout(() => {
+                damageElement.remove();
+            }, 1000);
+        }
+
+        // Function to handle the battle logic
+        function battle(playerChoice) {
+            // Generate random choice for enemy
+            const musuhChoice = getRandomChoice();
+
+            resultElement.innerHTML = `Kamu memilih ${playerChoice} <br>Musuh memilih ${musuhChoice}<br>`;
+
+            // Determine winner of the round
+            let winner = "";
+            if (playerChoice === musuhChoice) {
+                resultElement.innerHTML += "Seri! Tidak ada yang menang.<br>";
+            } else if (
+                (playerChoice === "batu" && musuhChoice === "gunting") ||
+                (playerChoice === "gunting" && musuhChoice === "kertas") ||
+                (playerChoice === "kertas" && musuhChoice === "batu")
+            ) {
+                // Player wins
+                const damage = Math.floor(Math.random() * 20) + 10;
+                musuhHp -= damage;
+                musuhHp = Math.max(0, musuhHp); // Ensure HP doesn't go below 0
+                showDamage(musuhElement, damage);
+                resultElement.innerHTML += `Kamu menang! Musuh menerima ${damage} damage.<br>`;
+            } else {
+                // Enemy wins
+                const damage = Math.floor(Math.random() * 20) + 10;
+                pemainHp -= damage;
+                pemainHp = Math.max(0, pemainHp); // Ensure HP doesn't go below 0
+                showDamage(pemainElement, damage);
+                resultElement.innerHTML += `Musuh menang! Kamu menerima ${damage} damage.<br>`;
+            }
+
+            // Update health values
+            pemainHpElement.innerText = pemainHp;
+            musuhHpElement.innerText = musuhHp;
+
+            // Check if the game is over
+            if (pemainHp <= 0) {
+                resultElement.innerHTML += "Game Over! Kamu kalah!";
+                disableGame();
+            } else if (musuhHp <= 0) {
+                resultElement.innerHTML += "Selamat! Kamu menang!";
+                disableGame();
+            }
+        }
+
+        // Disable game buttons after the game ends
+        function disableGame() {
+            batuButton.disabled = true;
+            guntingButton.disabled = true;
+            kertasButton.disabled = true;
+            restartButton.style.display = "inline-block"; // Show restart button
+        }
+
+        // Restart the game
+        function restartGame() {
+            pemainHp = 100;
+            musuhHp = 100;
+            pemainHpElement.innerText = pemainHp;
+            musuhHpElement.innerText = musuhHp;
+            resultElement.innerHTML = "";
+            batuButton.disabled = false;
+            guntingButton.disabled = false;
+            kertasButton.disabled = false;
+            restartButton.style.display = "none"; // Hide restart button
+        }
+
+        // Event listeners for player choices
+        batuButton.addEventListener("click", () => battle("batu"));
+        guntingButton.addEventListener("click", () => battle("gunting"));
+        kertasButton.addEventListener("click", () => battle("kertas"));
+
+        // Event listener for restarting the game
+        restartButton.addEventListener("click", restartGame);
+    </script>
+</body>
+</html>
